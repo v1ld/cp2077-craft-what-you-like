@@ -1,6 +1,5 @@
 // CraftWhatYouWant - v1ld, 2022-03-08
-// Copyright (c) 2022 v1ld.git@gmail.com
-// This code is licensed under MIT license
+// MIT License applies
 
 // Bypass crafting quality perk checks so you can craft anything
 @wrapMethod(CraftingSystem)
@@ -12,6 +11,35 @@ public final const func CanCraftGivenQuality(itemData: wref<gameItemData>, out q
 @wrapMethod(CraftingSystem)
 public final const func CanCraftGivenQuality(itemRecord: wref<Item_Record>, out quality: gamedataQuality) -> Bool {
   return true;
+}
+
+// Treat random quality item crafts as having Crafting Skill 20, allowing Legendary and Epics to be crafted
+@wrapMethod(RPGManager)
+public final static func SetQualityBasedOnCraftingSkill(object: wref<GameObject>) -> CName {
+  let quality: CName;
+  // v1ld: emulate a Crafting Skill level of 20
+  let craftingValue: Float = 20.0; // GameInstance.GetStatsSystem(object.GetGame()).GetStatValue(Cast<StatsObjectID>(object.GetEntityID()), gamedataStatType.Crafting);
+  let scalingValue: Float = GameInstance.GetStatsDataSystem(object.GetGame()).GetValueFromCurve(n"random_distributions", craftingValue, n"crafting_to_random_quality_items");
+  switch scalingValue {
+    case 0.00:
+      quality = n"Common";
+      break;
+    case 1.00:
+      quality = n"Uncommon";
+      break;
+    case 2.00:
+      quality = n"Rare";
+      break;
+    case 3.00:
+      quality = n"Epic";
+      break;
+    case 4.00:
+      quality = n"Legendary";
+      break;
+    default:
+      quality = n"Common";
+  };
+  return quality;
 }
 
 // Bypass crafting perk prereqs on crafted items
